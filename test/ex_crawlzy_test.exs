@@ -1,6 +1,7 @@
 defmodule ExCrawlzyTest do
   use ExUnit.Case
-#  doctest ExCrawlzy
+  doctest ExCrawlzy
+  doctest ExCrawlzy.Utils
 
   import Tesla.Mock
 
@@ -133,9 +134,10 @@ defmodule ExCrawlzyTest do
     add_field(:link, "a.mr-1", :link)
     add_field(:access, "span.Label", :text)
     add_field(:description, "p.pinned-item-desc", :text)
+    add_field(:language, "span.d-inline-block span[itemprop=\"programmingLanguage\"]", :text)
 
     def link(doc) do
-      path = ExCrawlzy.Utils.link(doc)
+      path = ExCrawlzy.Utils.props("href", doc)
       "https://github.com#{path}"
     end
   end
@@ -146,19 +148,22 @@ defmodule ExCrawlzyTest do
                access: "Public",
                description: "An API Prototype Platform",
                link: "https://github.com/nicolkill/dbb",
-               name: "dbb"
+               name: "dbb",
+               language: "Elixir"
              },
              %{
                access: "Public",
                description: "JSON Schema verifier in Elixir",
                link: "https://github.com/nicolkill/map_schema_validator",
-               name: "map_schema_validator"
+               name: "map_schema_validator",
+               language: "Elixir"
              },
              %{
                access: "Public",
                description: "",
                link: "https://github.com/nicolkill/ex_crawlzy",
-               name: "ex_crawlzy"
+               name: "ex_crawlzy",
+               language: "Elixir"
              }
            ] = GithubProfilePinnedRepos.crawl(@github_profile)
   end

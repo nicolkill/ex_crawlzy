@@ -25,12 +25,18 @@ defmodule ExCrawlzy.Client.Handlers.List do
     end
   end
 
+  @doc """
+  To specify the number of elements to take on the crawl
+  """
   defmacro list_size(selector) do
     quote do
       @list_size unquote(selector)
     end
   end
 
+  @doc """
+  Add the a selector to multiple items
+  """
   defmacro list_selector(selector) do
     quote do
       @list_selector unquote(selector)

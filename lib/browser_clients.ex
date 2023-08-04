@@ -1,4 +1,7 @@
 defmodule ExCrawlzy.BrowserClients do
+  @moduledoc """
+  Simulation of real clients from different browsers in order to avoid bot detection
+  """
 
   defmacro __using__(_) do
     quote do

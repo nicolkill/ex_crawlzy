@@ -55,15 +55,15 @@ defmodule ExampleCrawler do
   add_field(:title, "head title", :text)
   add_field(:body, "div#the_body", :text)
   add_field(:inner_field, "div#the_body div#inner_field", :text)
-  add_field(:inner_second_field, "div#inner_second_field", :private_text)
+  add_field(:inner_second_field, "div#inner_second_field", :text_alt)
   add_field(:number, "div#the_number", :text)
   add_field(:exist, "div#the_body div#exist", :exist)
   add_field(:not_exist, "div#the_body div#not_exist", :exist)
   add_field(:link, "a.link_class", :link)
   add_field(:img, "img.img_class", :img)
 
-  def private_text(data) do
-    ExCrawlzy.Utils.text(data)
+  def text_alt(sub_doc) do
+    ExCrawlzy.Utils.text(sub_doc)
   end
 end
 
@@ -105,9 +105,10 @@ defmodule GithubProfilePinnedRepos do
   add_field(:link, "a.mr-1", :link)
   add_field(:access, "span.Label", :text)
   add_field(:description, "p.pinned-item-desc", :text)
+  add_field(:language, "span.d-inline-block span[itemprop=\"programmingLanguage\"]", :text)
 
   def link(doc) do
-    path = ExCrawlzy.Utils.link(doc)
+    path = ExCrawlzy.Utils.props("href", doc)
     "https://github.com#{path}"
   end
 end
@@ -121,19 +122,22 @@ site = "https://github.com/nicolkill"
       access: "Public",
       description: "An API Prototype Platform",
       link: "https://github.com/nicolkill/dbb",
-      name: "dbb"
+      name: "dbb",
+      language: "Elixir"
     },
     %{
       access: "Public",
       description: "JSON Schema verifier in Elixir",
       link: "https://github.com/nicolkill/map_schema_validator",
-      name: "map_schema_validator"
+      name: "map_schema_validator",
+      language: "Elixir"
     },
     %{
       access: "Public",
       description: "",
       link: "https://github.com/nicolkill/ex_crawlzy",
-      name: "ex_crawlzy"
+      name: "ex_crawlzy",
+      language: "Elixir"
     }
   ]
 } == ExampleCrawlerList.crawl(site)

@@ -9,7 +9,13 @@ defmodule ExCrawlzy.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      name: "ExCrawlzy",
+      source_url: "https://github.com/nicolkill/ex_crawlzy",
+      package: package(),
+      docs: [
+        extras: ["README.md"]
+      ]
     ]
   end
 
@@ -30,7 +36,17 @@ defmodule ExCrawlzy.MixProject do
       {:tesla, "~> 1.4"},
       {:hackney, "~> 1.17"},
       {:jason, ">= 1.0.0"},
-      {:floki, "~> 0.34.0"}
+      {:floki, "~> 0.34.0"},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false},
+    ]
+  end
+
+  defp package do
+    [
+      name: "ex_crawlzy",
+      files: ~w(lib priv config .formatter.exs mix.exs README*),
+      licenses: ["Apache-2.0"],
+      links: %{"GitHub" => "https://github.com/nicolkill/ex_crawlzy"}
     ]
   end
 end

@@ -18,7 +18,7 @@ defmodule ExCrawlzy do
   ## Examples
 
       iex> ExCrawlzy.crawl("http://some.site")
-      {:ok, "<html><head><title>the title</title></head><body><div id="the_body">the body</div></body></html>"}
+      {:ok, "<!doctype html><html>  <head>    <title>the title</title>  </head>  <body>    <div id=\\\"the_body\\\">      the body      <div id=\\\"inner_field\\\">        inner field      </div>      <div id=\\\"inner_second_field\\\">        inner second field        <div id=\\\"the_number\\\">          2023        </div>      </div>      <div id=\\\"exist\\\">        this field exist      </div>      <a class=\\\"link_class\\\" href=\\\"http://some_external.link\\\"></a>      <img class=\\\"img_class\\\" src=\\\"http://some_external.link/image_path.jpg\\\" alt=\\\"some image\\\">    </div>  </body></html>"}
 
   """
   @spec crawl(String.t()) :: {result(), String.t()}
@@ -52,9 +52,9 @@ defmodule ExCrawlzy do
 
   ## Examples
 
-      iex> raw_content = "<html><head><title>the title</title></head><body><div id="the_body">the body</div></body></html>"
+      iex> raw_content = "<html><head><title>the title</title></head><body><div id=\\\"the_body\\\">the body</div></body></html>"
       iex> ExCrawlzy.parse(%{body: {"#the_body", :text}}, raw_content)
-      {:ok, }
+      {:ok, %{body: "the body"}}
 
   """
   @spec parse(%{map_key() => selector_tuple()}, String.t() | Floki.html_tree() | Floki.html_node()) :: {result(), %{map_key() => String.t()}}

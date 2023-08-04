@@ -1,12 +1,32 @@
 defmodule ExCrawlzy.Client.Handlers.Fields do
   @moduledoc """
-  Internal module to handle json fields
+  Internal module to handle json fields, mainly helps to create modules with defined keys on compile
+
+  add to the module the `use` and use the macro `add_field/3`
+
+  ```elixir
+  defmodule Some.Module do
+    use ExCrawlzy.Client.Handlers.Fields
+
+    add_field(:name, "a.mr-1 span.repo", :text)
+    ...
+  ```
+
+  and adds the function `fields/0` to the module
+
+  ```elixir
+  > Some.Module.fields()
+  %{name: {"a.mr-1 span.repo", :text}}
+  ```
   """
 
   defmacro __using__(_) do
     quote do
       import ExCrawlzy.Client.Handlers.Fields
 
+      @moduledoc """
+      Get all the fields added with the macro `add_field/3`
+      """
       def fields() do
         mod_functions = __MODULE__.__info__(:functions)
 
@@ -41,6 +61,9 @@ defmodule ExCrawlzy.Client.Handlers.Fields do
     end
   end
 
+  @doc """
+  Add the params in the inner data, all are saved on the module and you can get the whole data using the function `fields/0`
+  """
   defmacro add_field(field_name, selector, func) do
     quote do
       @selectors %{field_name: unquote(field_name), selector: unquote(selector), func: unquote(func)}
