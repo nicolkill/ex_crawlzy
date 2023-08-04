@@ -32,11 +32,10 @@ defmodule ExCrawlzy.Utils do
   def text([element]), do: text(element)
   def text([element | _]), do: text(element)
   def text({_, _, [text]}), do: String.trim(text)
-  def text({_, _, [text, _]}), do: String.trim(text)
+  def text({_, _, [text | _]}), do: String.trim(text)
 
   def link([]), do: ""
   def link([element]), do: link(element)
-
   def link({_, props, _}) do
     case Enum.find(props, &(elem(&1, 0) == "href")) do
       {"href", link} -> String.trim(link)
@@ -46,7 +45,6 @@ defmodule ExCrawlzy.Utils do
 
   def img([]), do: ""
   def img([element]), do: img(element)
-
   def img({"img", props, _}) do
     props
     |> Enum.flat_map(

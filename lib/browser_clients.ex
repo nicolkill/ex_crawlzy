@@ -1,4 +1,4 @@
-defmodule ExCrawlzy.Clients do
+defmodule ExCrawlzy.BrowserClients do
 
   defmacro __using__(_) do
     quote do

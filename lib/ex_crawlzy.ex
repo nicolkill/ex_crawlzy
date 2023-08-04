@@ -3,14 +3,14 @@ defmodule ExCrawlzy do
   Documentation for `ExCrawlzy`.
   """
 
-  use ExCrawlzy.Clients
+  use ExCrawlzy.BrowserClients
 
   alias ExCrawlzy.Utils
 
   @type result() :: :ok | :error
   @type map_key() :: String.t() | atom()
+  @type post_processing() :: atom() | {module(), atom()} | (any() -> String.t())
   @type selector_tuple() :: {String.t(), post_processing()}
-  @type post_processing() :: atom() | (any() -> String.t())
 
   @doc """
   Request link and returns the raw content.
@@ -18,7 +18,7 @@ defmodule ExCrawlzy do
   ## Examples
 
       iex> ExCrawlzy.crawl("http://some.site")
-      {:ok, "<html><head><title>the title</title></head><body><div id=\"the_body\">the body</div></body></html>"}
+      {:ok, "<html><head><title>the title</title></head><body><div id="the_body">the body</div></body></html>"}
 
   """
   @spec crawl(String.t()) :: {result(), String.t()}
@@ -52,7 +52,7 @@ defmodule ExCrawlzy do
 
   ## Examples
 
-      iex> raw_content = "<html><head><title>the title</title></head><body><div id=\"the_body\">the body</div></body></html>"
+      iex> raw_content = "<html><head><title>the title</title></head><body><div id="the_body">the body</div></body></html>"
       iex> ExCrawlzy.parse(%{body: {"#the_body", :text}}, raw_content)
       {:ok, }
 
@@ -68,10 +68,13 @@ defmodule ExCrawlzy do
             {selector, post_processing} = Map.get(mapping, key)
             crawled_data = Floki.find(document, selector)
             data =
-              if is_function(post_processing) do
-                post_processing
-              else
-                apply(Utils, post_processing, [crawled_data])
+              case post_processing do
+                post_processing when is_function(post_processing) ->
+                  post_processing.(crawled_data)
+                {mod, func} ->
+                  apply(mod, func, [crawled_data])
+                post_processing ->
+                  apply(Utils, post_processing, [crawled_data])
               end
 
             Map.put(acc, key, data)
