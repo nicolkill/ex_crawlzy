@@ -11,6 +11,7 @@ defmodule ExCrawlzy.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "ExCrawlzy",
+      description: "Another crawler for Elixir inspired on Tesla.",
       source_url: "https://github.com/nicolkill/ex_crawlzy",
       package: package(),
       docs: [
