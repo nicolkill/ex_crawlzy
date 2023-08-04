@@ -1,20 +1,16 @@
-defmodule ExCrawlzy.Client do
+defmodule ExCrawlzy.Client.Handlers.Fields do
   @moduledoc """
-  Module that helps to create clients to crawl some sites
-
-  The point its create other module that uses this module and add fields using the macro `add_field/3`
-
-  Then just use the client function `crawl/1`
+  Internal module to handle json fields
   """
 
   defmacro __using__(_) do
     quote do
-      import ExCrawlzy.Client
+      import ExCrawlzy.Client.Handlers.Fields
 
       def fields() do
         mod_functions = __MODULE__.__info__(:functions)
 
-        available_selectors()
+        get_available_selectors()
         |> Enum.reduce(%{}, fn k, acc ->
           {selector, func} = get_selector_data(k)
           func = if Keyword.has_key?(mod_functions, func), do: {__MODULE__, func}, else: func
@@ -23,18 +19,8 @@ defmodule ExCrawlzy.Client do
         end)
       end
 
-      def crawl(site) do
-        case ExCrawlzy.crawl(site) do
-          {:ok, content} ->
-            fields = fields()
-            ExCrawlzy.parse(fields, content)
-          error ->
-            error
-        end
-      end
-
       Module.register_attribute(__MODULE__, :selectors, accumulate: true)
-      @before_compile ExCrawlzy.Client
+      @before_compile ExCrawlzy.Client.Handlers.Fields
     end
   end
 
@@ -51,7 +37,7 @@ defmodule ExCrawlzy.Client do
 
     quote do
       unquote(selectors)
-      defp available_selectors(), do: unquote(available_selectors)
+      defp get_available_selectors(), do: unquote(available_selectors)
     end
   end
 

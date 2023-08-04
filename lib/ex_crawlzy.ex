@@ -57,31 +57,35 @@ defmodule ExCrawlzy do
       {:ok, }
 
   """
-  @spec parse(%{map_key() => selector_tuple()}, String.t()) :: {result(), %{map_key() => String.t()}}
-  def parse(mapping, raw_content) do
+  @spec parse(%{map_key() => selector_tuple()}, String.t() | Floki.html_tree() | Floki.html_node()) :: {result(), %{map_key() => String.t()}}
+  def parse(mapping, raw_content) when is_bitstring(raw_content) do
+
     case Floki.parse_document(raw_content) do
       {:ok, document} ->
-        data =
-          mapping
-          |> Map.keys()
-          |> Enum.reduce(%{}, fn key, acc ->
-            {selector, post_processing} = Map.get(mapping, key)
-            crawled_data = Floki.find(document, selector)
-            data =
-              case post_processing do
-                post_processing when is_function(post_processing) ->
-                  post_processing.(crawled_data)
-                {mod, func} ->
-                  apply(mod, func, [crawled_data])
-                post_processing ->
-                  apply(Utils, post_processing, [crawled_data])
-              end
-
-            Map.put(acc, key, data)
-          end)
-        {:ok, data}
+        parse(mapping, document)
       _ ->
         {:error, nil}
     end
+  end
+  def parse(mapping, document) do
+    data =
+      mapping
+      |> Map.keys()
+      |> Enum.reduce(%{}, fn key, acc ->
+        {selector, post_processing} = Map.get(mapping, key)
+        crawled_data = Floki.find(document, selector)
+        data =
+          case post_processing do
+            post_processing when is_function(post_processing) ->
+              post_processing.(crawled_data)
+            {mod, func} ->
+              apply(mod, func, [crawled_data])
+            post_processing ->
+              apply(Utils, post_processing, [crawled_data])
+          end
+
+        Map.put(acc, key, data)
+      end)
+    {:ok, data}
   end
 end

@@ -33,6 +33,7 @@ defmodule ExCrawlzy.Utils do
   def text([element | _]), do: text(element)
   def text({_, _, [text]}), do: String.trim(text)
   def text({_, _, [text | _]}), do: String.trim(text)
+  def text({_, _, _}), do: ""
 
   def link([]), do: ""
   def link([element]), do: link(element)

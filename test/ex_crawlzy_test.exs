@@ -5,6 +5,8 @@ defmodule ExCrawlzyTest do
   import Tesla.Mock
 
   @site "http://some.site"
+  @site_list "http://some_list.site"
+  @github_profile "https://github.com/nicolkill"
 
   setup do
     {:ok, content} =
@@ -13,9 +15,25 @@ defmodule ExCrawlzyTest do
       |> (&"#{&1}/test.html").()
       |> File.read()
 
+    {:ok, content_list} =
+      :ex_crawlzy
+      |> :code.priv_dir()
+      |> (&"#{&1}/test_list.html").()
+      |> File.read()
+
+    {:ok, content_github} =
+      :ex_crawlzy
+      |> :code.priv_dir()
+      |> (&"#{&1}/github_profile.html").()
+      |> File.read()
+
     mock(fn
       %{method: :get, url: @site} ->
         %Tesla.Env{status: 200, body: content}
+      %{method: :get, url: @site_list} ->
+        %Tesla.Env{status: 200, body: content_list}
+      %{method: :get, url: @github_profile} ->
+        %Tesla.Env{status: 200, body: content_github}
     end)
 
     :ok
@@ -51,7 +69,7 @@ defmodule ExCrawlzyTest do
   end
 
   defmodule ExampleCrawler do
-    use ExCrawlzy.Client
+    use ExCrawlzy.Client.Json
 
     add_field(:title, "head title", :text)
     add_field(:body, "div#the_body", :text)
@@ -83,5 +101,65 @@ defmodule ExCrawlzyTest do
                img: "http://some_external.link/image_path.jpg"
              }
            } = ExampleCrawler.crawl(@site)
+  end
+
+  defmodule ExampleCrawlerList do
+    use ExCrawlzy.Client.List
+
+    list_size(2)
+    list_selector("div.possible_value")
+    add_field(:field_1, "div.field_1", :text)
+    add_field(:field_2, "div.field_2", :text)
+  end
+
+  test "using client list" do
+    assert [
+             %{
+               field_1: "field 1 value first element",
+               field_2: "field 2 value first element"
+             },
+             %{
+               field_1: "field 1 value second element",
+               field_2: "field 2 value second element"
+             }
+           ] = ExampleCrawlerList.crawl(@site_list)
+  end
+
+  defmodule GithubProfilePinnedRepos do
+    use ExCrawlzy.Client.List
+
+    list_selector("div.pinned-item-list-item")
+    add_field(:name, "a.mr-1 span.repo", :text)
+    add_field(:link, "a.mr-1", :link)
+    add_field(:access, "span.Label", :text)
+    add_field(:description, "p.pinned-item-desc", :text)
+
+    def link(doc) do
+      path = ExCrawlzy.Utils.link(doc)
+      "https://github.com#{path}"
+    end
+  end
+
+  test "crawling a github profile" do
+    assert [
+             %{
+               access: "Public",
+               description: "An API Prototype Platform",
+               link: "https://github.com/nicolkill/dbb",
+               name: "dbb"
+             },
+             %{
+               access: "Public",
+               description: "JSON Schema verifier in Elixir",
+               link: "https://github.com/nicolkill/map_schema_validator",
+               name: "map_schema_validator"
+             },
+             %{
+               access: "Public",
+               description: "",
+               link: "https://github.com/nicolkill/ex_crawlzy",
+               name: "ex_crawlzy"
+             }
+           ] = GithubProfilePinnedRepos.crawl(@github_profile)
   end
 end

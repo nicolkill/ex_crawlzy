@@ -6,11 +6,9 @@ You can crawl sites and transform content to json/map using CSS selectors with n
 and more than a simple integration, you can transform a simple site to json with fields like lists or another sub-json
 structures
 
-Easy client creation and implementation
-
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
+If [available in Hex](https://hexdocs.pm/ex_crawlzy), the package can be installed
 by adding `ex_crawlzy` to your list of dependencies in `mix.exs`:
 
 ```elixir
@@ -52,7 +50,7 @@ You can create a module pre-configured with key, selector and processing functio
 
 ```elixir
 defmodule ExampleCrawler do
-  use ExCrawlzy.Client
+  use ExCrawlzy.Client.Json
   
   add_field(:title, "head title", :text)
   add_field(:body, "div#the_body", :text)
@@ -72,4 +70,71 @@ end
 site = "https://example.site"
 
 {:ok, data} = ExampleCrawler.crawl(site)
+```
+
+#### List of elements
+
+You can create a client that parses multiple elements from html using css selectors
+
+Using `list_selector/1` you can define the selector that all elements matches, the next is define as the client 
+`ExCrawlzy.Client.Json` and this are the inner elements
+
+```elixir
+defmodule ExampleCrawlerList do
+  use ExCrawlzy.Client.List
+
+  list_size(2)
+  list_selector("div.possible_value")
+  add_field(:field_1, "div.field_1", :text)
+  add_field(:field_2, "div.field_2", :text)
+end
+
+site = "https://example_list.site"
+
+{:ok, data} = ExampleCrawlerList.crawl(site)
+```
+
+#### A good example
+
+```elixir
+defmodule GithubProfilePinnedRepos do
+  use ExCrawlzy.Client.List
+
+  list_selector("div.pinned-item-list-item")
+  add_field(:name, "a.mr-1 span.repo", :text)
+  add_field(:link, "a.mr-1", :link)
+  add_field(:access, "span.Label", :text)
+  add_field(:description, "p.pinned-item-desc", :text)
+
+  def link(doc) do
+    path = ExCrawlzy.Utils.link(doc)
+    "https://github.com#{path}"
+  end
+end
+
+site = "https://github.com/nicolkill"
+
+{
+  :ok, 
+  [
+    %{
+      access: "Public",
+      description: "An API Prototype Platform",
+      link: "https://github.com/nicolkill/dbb",
+      name: "dbb"
+    },
+    %{
+      access: "Public",
+      description: "JSON Schema verifier in Elixir",
+      link: "https://github.com/nicolkill/map_schema_validator",
+      name: "map_schema_validator"
+    },
+    %{
+      access: "Public",
+      description: "",
+      link: "https://github.com/nicolkill/ex_crawlzy",
+      name: "ex_crawlzy"
+    }
+  ]
+} == ExampleCrawlerList.crawl(site)
 ```
