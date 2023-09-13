@@ -3,9 +3,8 @@ defmodule ExCrawlzy do
   Documentation for `ExCrawlzy`.
   """
 
-  use ExCrawlzy.BrowserClients
-
   alias ExCrawlzy.Utils
+  alias ExCrawlzy.BrowserClients
 
   @type result() :: :ok | :error
   @type map_key() :: String.t() | atom()
@@ -21,9 +20,13 @@ defmodule ExCrawlzy do
       {:ok, "<!doctype html><html>  <head>    <title>the title</title>  </head>  <body>    <div id=\\\"the_body\\\">      the body      <div id=\\\"inner_field\\\">        inner field      </div>      <div id=\\\"inner_second_field\\\">        inner second field        <div id=\\\"the_number\\\">          2023        </div>      </div>      <div id=\\\"exist\\\">        this field exist      </div>      <a class=\\\"link_class\\\" href=\\\"http://some_external.link\\\"></a>      <img class=\\\"img_class\\\" src=\\\"http://some_external.link/image_path.jpg\\\" alt=\\\"some image\\\">    </div>  </body></html>"}
 
   """
-  @spec crawl(String.t()) :: {result(), String.t()}
-  def crawl(link) do
-    client = Enum.random(@clients)
+  @spec crawl(String.t(), [BrowserClients.client()]) :: {result(), String.t()}
+  def crawl(link, clients \\ []) do
+    clients = if Enum.empty?(clients),
+                 do: BrowserClients.clients(),
+                 else: Enum.map(clients, &BrowserClients.create_client/1)
+
+    client = Enum.random(clients)
     opts = [
       method: :get,
       url: link

@@ -1,6 +1,27 @@
 defmodule ExCrawlzy.Client.Handlers.List do
   @moduledoc """
-  Internal module to handle json fields
+  Internal module to handle json fields, mainly helps to create modules with defined list selector match on compile
+
+  add to the module the `use` and use the macro `list_selector/1` to specify the multiple selector and `list_size/1` to
+  specify the amount of elements to take
+
+  ```elixir
+  defmodule Some.Module do
+    use ExCrawlzy.Client.Handlers.List
+
+    list_size(5)
+    list_selector("div.element-1/3")
+    ...
+  ```
+
+  and adds the functions `list_size/0` and `get_list_selector_selector/0` to the module
+
+  ```elixir
+  > Some.Module.list_size()
+  5
+  > Some.Module.get_list_selector_selector()
+  "div.element-1/3"
+  ```
   """
 
   defmacro __using__(_) do
@@ -17,7 +38,6 @@ defmodule ExCrawlzy.Client.Handlers.List do
     list_size = Module.get_attribute(env.module, :list_size)
     list_size = if is_nil(list_size), do: 20, else: list_size
     list_selector = Module.get_attribute(env.module, :list_selector)
-
 
     quote do
       def list_size(), do: unquote(list_size)

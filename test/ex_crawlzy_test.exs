@@ -105,7 +105,7 @@ defmodule ExCrawlzyTest do
   end
 
   defmodule ExampleCrawlerList do
-    use ExCrawlzy.Client.List
+    use ExCrawlzy.Client.JsonList
 
     list_size(2)
     list_selector("div.possible_value")
@@ -127,7 +127,7 @@ defmodule ExCrawlzyTest do
   end
 
   defmodule GithubProfilePinnedRepos do
-    use ExCrawlzy.Client.List
+    use ExCrawlzy.Client.JsonList
 
     list_selector("div.pinned-item-list-item")
     add_field(:name, "a.mr-1 span.repo", :text)
@@ -166,5 +166,31 @@ defmodule ExCrawlzyTest do
                language: "Elixir"
              }
            ] = GithubProfilePinnedRepos.crawl(@github_profile)
+  end
+
+  defmodule AddMoreClientsExample do
+    use ExCrawlzy.Client.JsonList
+
+    add_browser_client([
+      {"referer", "https://your_site.com"},
+      {"user-agent", "Custom User Agent"}
+    ])
+    list_size(2)
+    list_selector("div.possible_value")
+    add_field(:field_1, "div.field_1", :text)
+    add_field(:field_2, "div.field_2", :text)
+  end
+
+  test "crawling a site with extra user agents" do
+    assert [
+             %{
+               field_1: "field 1 value first element",
+               field_2: "field 2 value first element"
+             },
+             %{
+               field_1: "field 1 value second element",
+               field_2: "field 2 value second element"
+             }
+           ] = AddMoreClientsExample.crawl(@site_list)
   end
 end

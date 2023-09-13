@@ -14,15 +14,15 @@ by adding `ex_crawlzy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_crawlzy, "~> 0.1.0"}
+    {:ex_crawlzy, "~> 0.1.1"}
   ]
 end
 ```
 
 ## Usage
 
-Just use the function [`ExCrawlzy.crawl/1`](https://hexdocs.pm/ex_crawlzy/0.1.0/ExCrawlzy.html#crawl/1) to
-crawl and [`ExCrawlzy.parse/2`](https://hexdocs.pm/ex_crawlzy/0.1.0/ExCrawlzy.html#parse/2) to parse to json
+Just use the function [`ExCrawlzy.crawl/1`](https://hexdocs.pm/ex_crawlzy/ExCrawlzy.html#crawl/1) to
+crawl and [`ExCrawlzy.parse/2`](https://hexdocs.pm/ex_crawlzy/ExCrawlzy.html#parse/2) to parse to json
 
 #### Basic usage
 
@@ -81,7 +81,7 @@ Using `list_selector/1` you can define the selector that all elements matches, t
 
 ```elixir
 defmodule ExampleCrawlerList do
-  use ExCrawlzy.Client.List
+  use ExCrawlzy.Client.JsonList
 
   list_size(2)
   list_selector("div.possible_value")
@@ -98,7 +98,7 @@ site = "https://example_list.site"
 
 ```elixir
 defmodule GithubProfilePinnedRepos do
-  use ExCrawlzy.Client.List
+  use ExCrawlzy.Client.JsonList
 
   list_selector("div.pinned-item-list-item")
   add_field(:name, "a.mr-1 span.repo", :text)
@@ -141,4 +141,46 @@ site = "https://github.com/nicolkill"
     }
   ]
 } == ExampleCrawlerList.crawl(site)
+```
+
+## Add clients
+
+You can define you own browser clients on the requests, just use the function `add_browser_client/1` and your headers
+on this shape `[{"header_name", "header value"}]`
+
+> Add your own browser clients will replace the predefined ones
+
+```elixir
+site = "https://example.site"
+
+fields = %{
+  body: {"div#the_body", :text}
+}
+
+clients = [
+  [
+    {"referer", "https://your_site.com"},
+    {"user-agent", "Custom User Agent"}
+  ]
+]
+
+{:ok, content} = ExCrawlzy.crawl(site, clients)
+{:ok, %{body: body}} = ExCrawlzy.parse(fields, content)
+
+defmodule ExampleCrawlerList do
+  use ExCrawlzy.Client.JsonList
+
+  add_browser_client([
+    {"referer", "https://your_site.com"},
+    {"user-agent", "Custom User Agent"}
+  ])
+  list_size(2)
+  list_selector("div.possible_value")
+  add_field(:field_1, "div.field_1", :text)
+  add_field(:field_2, "div.field_2", :text)
+end
+
+site = "https://example_list.site"
+
+{:ok, data} = ExampleCrawlerList.crawl(site)
 ```

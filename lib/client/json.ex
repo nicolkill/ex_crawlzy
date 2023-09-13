@@ -31,13 +31,16 @@ defmodule ExCrawlzy.Client.Json do
   defmacro __using__(_) do
     quote do
       use ExCrawlzy.Client.Handlers.Fields
+      use ExCrawlzy.Client.Handlers.BrowserClients
       import ExCrawlzy.Client.Json
 
       @behaviour ExCrawlzy.Client.Crawler.Interface
 
       @impl ExCrawlzy.Client.Crawler.Interface
       def crawl(site) do
-        case ExCrawlzy.crawl(site) do
+        browser_clients = browser_clients()
+
+        case ExCrawlzy.crawl(site, browser_clients) do
           {:ok, content} ->
             fields = fields()
             ExCrawlzy.parse(fields, content)

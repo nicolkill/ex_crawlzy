@@ -1,4 +1,4 @@
-defmodule ExCrawlzy.Client.List do
+defmodule ExCrawlzy.Client.JsonList do
   @moduledoc """
   Module that helps to create clients to crawl some sites and extract the data as list of json/map
 
@@ -13,7 +13,12 @@ defmodule ExCrawlzy.Client.List do
 
   ```elixir
   defmodule GithubProfilePinnedRepos do
-    use ExCrawlzy.Client.List
+    use ExCrawlzy.Client.JsonList
+
+    add_browser_client([
+      {"referer", "https://your_site.com"},
+      {"user-agent", "Custom User Agent"}
+    ])
 
     list_selector("div.pinned-item-list-item")
     add_field(:name, "a.mr-1 span.repo", :text)
@@ -36,13 +41,17 @@ defmodule ExCrawlzy.Client.List do
     quote do
       use ExCrawlzy.Client.Handlers.Fields
       use ExCrawlzy.Client.Handlers.List
-      import ExCrawlzy.Client.List
+      use ExCrawlzy.Client.Handlers.BrowserClients
+
+      import ExCrawlzy.Client.JsonList
 
       @behaviour ExCrawlzy.Client.Crawler.Interface
 
       @impl ExCrawlzy.Client.Crawler.Interface
       def crawl(site) do
-        case ExCrawlzy.crawl(site) do
+        browser_clients = browser_clients()
+
+        case ExCrawlzy.crawl(site, browser_clients) do
           {:ok, content} ->
             list_size = list_size()
             list_selector = get_list_selector_selector()
