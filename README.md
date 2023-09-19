@@ -184,3 +184,43 @@ site = "https://example_list.site"
 
 {:ok, data} = ExampleCrawlerList.crawl(site)
 ```
+
+## Testing your crawler
+
+Because uses the Tesla core, you can test identically like a Tesla Client, [see the guide to do it](https://github.com/elixir-tesla/tesla#testing)
+but here also another example testing the past `ExampleCrawlerList` module
+
+The response must be the html of the site for this go to the site, right-click and select the option `View Source`, or
+use the shortcut `Ctrl + U` or `CMD + U` on Mac, then save the source in the `priv` folder of your project (not mandatory)
+and then you can use this fragment
+
+```elixir
+# test.exs
+config :tesla, ExampleCrawlerList, adapter: Tesla.Mock
+
+defmodule ExampleCrawlerListTest do
+  use ExUnit.Case
+
+  import Tesla.Mock
+
+  setup do
+    {:ok, content} =
+      :your_app
+      |> :code.priv_dir()
+      |> then(&"#{&1}/test.html")
+      |> File.read()
+
+    mock(fn
+      %{method: :get, url: "https://example_list.site"} ->
+        %Tesla.Env{status: 200, body: content}
+    end)
+
+    :ok
+  end
+
+  test "list things" do
+    site = "https://example_list.site"
+    assert {:ok, data} = ExampleCrawlerList.crawl(site)
+  end
+end
+```
